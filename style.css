@@ -72,7 +72,10 @@ body{
     100%{opacity:1;transform:translateY(0);filter:blur(0);}
 }
 .reveal-node{opacity:0;}
-.is-visible{animation:fadeUp 1s var(--ease-out-expo) forwards;}
+.is-visible, .visible {
+    animation: fadeUp 1s var(--ease-out-expo) forwards;
+    opacity: 1; /* Safety backup */
+}
 .delay-1{animation-delay:.1s;}
 .delay-2{animation-delay:.2s;}
 .delay-3{animation-delay:.35s;}
