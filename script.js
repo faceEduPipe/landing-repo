@@ -1,3 +1,41 @@
+/**
+ * FACE
+ * CLIENT-SIDE CONTROLLER
+ * * Mode: Local JSON Read
+ * Source: ./content.json
+ */
+
+document.addEventListener('DOMContentLoaded', () => {
+  initSystem();
+});
+
+async function initSystem() {
+  console.log('FACE [SYS] :: INITIALIZING...');
+
+  try {
+    // 1. Fetch the local data file (created by your GitHub Action)
+    const response = await fetch('./content.json');
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    // 2. Distribute data to sections
+    if (data.global) updateGlobal(data.global);
+    if (data.grid)   updateGrid(data.grid);
+    if (data.tracks) updateTracks(data.tracks);
+    if (data.method) updateMethod(data.method);
+
+    console.log('FACE [SYS] :: SYSTEM READY.');
+
+  } catch (error) {
+    console.warn('FACE [SYS] :: OFFLINE MODE / DATA MISSING');
+    console.error(error);
+  }
+}
+
 /* =========================================
    1. THEME DEFINITIONS (ACADEMIC PALETTE)
    ========================================= */
