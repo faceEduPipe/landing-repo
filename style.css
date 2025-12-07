@@ -1,36 +1,60 @@
-:root{
-    --bg-concrete:#F2F2F0;
-    --ink-graphite:#111;
-    --ink-dim:#555;
-    --ink-ghost:rgba(21,21,21,.15);
-    --accent-acid:#A9C955;
-    --accent-acid-ghost:rgba(169,201,85,.35);
-    --font-head:'Space Grotesk',sans-serif;
-    --font-body:'IBM Plex Serif',serif;
-    --font-tech:'JetBrains Mono',monospace;
-    --type-display-xl:clamp(6.5rem,18vw,16rem);
-    --type-display-lg:clamp(3rem,8vw,7rem);
-    --type-display-md:clamp(2.5rem,5vw,4.5rem);
-    --type-body-xl:clamp(2rem,4vw,3rem);
-    --type-body-lead:clamp(1.1rem,1.5vw,1.35rem);
-    --type-body-base:clamp(.9rem,1.1vw,1rem);
-    --type-mono-sm:.85rem;
-    --type-mono-xs:.7rem;
-    --section-pad-x:clamp(30px,6vw,100px);
-    --grid-gap:clamp(4rem,6vw,8rem);
-    --ease-out-expo:cubic-bezier(.16,1,.3,1);
+:root {
+    /* DEFAULT LIGHT MODE: "The Oxford System" (Clean & Academic) */
+    /* Changed from Concrete Grey to Cool Official White */
+    --bg-concrete: #F4F6F8;
+    
+    /* Changed from Tech Black to Deep Navy */
+    --ink-graphite: #0F172A;
+    
+    --ink-dim: #475569;
+    --ink-ghost: rgba(15, 23, 42, 0.1);
+    
+    /* DEFAULT ACCENT: Signal Blue (Not Acid Green) */
+    --accent-acid: #60A5FA; 
+    --accent-acid-ghost: rgba(96, 165, 250, 0.2);
+
+    /* Fonts */
+    --font-head: 'Space Grotesk', sans-serif;
+    --font-body: 'IBM Plex Serif', serif;
+    --font-tech: 'JetBrains Mono', monospace;
+
+    /* Spacing & Type */
+    --type-display-xl: clamp(6.5rem, 18vw, 16rem);
+    --type-display-lg: clamp(3rem, 8vw, 7rem);
+    --type-display-md: clamp(2.5rem, 5vw, 4.5rem);
+    --type-body-xl: clamp(2rem, 4vw, 3rem);
+    --type-body-lead: clamp(1.1rem, 1.5vw, 1.35rem);
+    --type-body-base: clamp(.9rem, 1.1vw, 1rem);
+    --type-mono-sm: .85rem;
+    --type-mono-xs: .7rem;
+    --section-pad-x: clamp(30px, 6vw, 100px);
+    --grid-gap: clamp(4rem, 6vw, 8rem);
+    --ease-out-expo: cubic-bezier(.16, 1, .3, 1);
 }
 
-body.dark-mode{
-    --bg-concrete:#111;
-    --ink-graphite:#E0E0E0;
-    --ink-dim:#888;
-    --ink-ghost:rgba(224,224,224,.2);
+/* ACADEMIC DARK MODE (The Blueprint) */
+body.dark-mode {
+    /* Background: Deep "Oxford" Navy (No Black) */
+    --bg-concrete: #0F1C2E; 
+
+    /* Text: Clean White Paper */
+    --ink-graphite: #F8FAFC; 
+
+    /* Secondary Text: Muted Slate Blue */
+    --ink-dim: #94A3B8;
+
+    /* Dividers: Subtle Blue Line */
+    --ink-ghost: rgba(148, 163, 184, 0.15);
+
+    /* Accent: Keeps the Signal Blue (or whatever the user selected) */
+    /* Note: If user selected a specific theme, JS will override this. */
 }
 
+/* RESET & BASICS */
 *{box-sizing:border-box;margin:0;padding:0;}
 html{scroll-behavior:smooth;}
-::selection{background:var(--accent-acid);color:var(--ink-graphite);}
+::selection{background:var(--accent-acid);color:var(--ink-graphite);} /* Matches Accent */
+
 body{
     background:var(--bg-concrete);
     color:var(--ink-graphite);
@@ -57,15 +81,15 @@ body{
 
 /* SECTIONS */
 .std-section, #hero, #manifest, .mega-footer {
-      min-height:100svh;
-      width:100%;
-      display:flex;
-      flex-direction:column;
-      justify-content:center;
-      padding:140px var(--section-pad-x);
-      gap:var(--layout-gap); /* REFINED GAP */
-      position:relative;
-    }
+     min-height:100svh;
+     width:100%;
+     display:flex;
+     flex-direction:column;
+     justify-content:center;
+     padding:140px var(--section-pad-x);
+     gap:60px; /* FIXED MISSING VAR */
+     position:relative;
+}
 
 /* HEADERS & TYPOGRAPHY */
 .header-wrapper{display:flex;flex-direction:column;align-items:flex-start;margin-bottom:8rem;width:100%;}
@@ -124,26 +148,8 @@ button.theme-toggle:hover,button.theme-toggle:focus-visible{color:var(--accent-a
 .data-row{display:flex;justify-content:space-between;font-family:var(--font-tech);font-size:.75rem;letter-spacing:.05em;border-bottom:1px solid rgba(0,0,0,.05);padding-bottom:4px;}
 .data-key{color:var(--ink-dim);text-transform:uppercase;}
 .data-val{color:var(--ink-graphite);font-weight:700;text-align:right;}
-.acc-progress {
-  position:absolute;
-  top:0;
-  left:-50px; /* move if needed */
-  width:4px;
-  height:100%;
-  background:var(--accent-acid-ghost);
-  overflow:hidden;
-}
-
-.acc-progress-fill {
-  position: absolute;
-  top: 0;       /* start at top */
-  left: 0;
-  width: 100%;
-  height: 0;
-  background: var(--accent-acid);
-  border-radius: 3px;
-  transition: height 0.1s linear;
-}
+.acc-progress {position:absolute;top:0;left:-50px;width:4px;height:100%;background:var(--accent-acid-ghost);overflow:hidden;}
+.acc-progress-fill {position:absolute;top:0;left:0;width:100%;height:0;background:var(--accent-acid);border-radius:3px;transition:height 0.1s linear;}
 
 /* METHODS / SECTION 3 */
 #method{padding:140px var(--section-pad-x);gap:60px;}
@@ -151,12 +157,7 @@ button.theme-toggle:hover,button.theme-toggle:focus-visible{color:var(--accent-a
 .method-thesis{font-family:var(--font-body);font-size:var(--type-body-xl);line-height:1.5;color:var(--ink-graphite);max-width:900px;text-align:left;letter-spacing:-.02em;}
 .method-thesis .replaceable{color:var(--accent-acid);font-weight:600;}
 .method-layout .grid-container{gap:var(--grid-gap);}
-.replaceable {
-    color: var(--accent-acid);
-    font-weight: 600;
-    display: inline-block;
-    transition: opacity 0.3s ease, transform 0.3s ease;
-}
+.replaceable {color:var(--accent-acid);font-weight:600;display:inline-block;transition:opacity 0.3s ease,transform 0.3s ease;}
 
 /* FOOTER */
 .mega-footer{display:flex;flex-direction:column;padding:100px var(--section-pad-x);gap:60px;}
@@ -166,9 +167,31 @@ button.theme-toggle:hover,button.theme-toggle:focus-visible{color:var(--accent-a
 .footer-bottom .footer-col:last-child{justify-content:flex-end;}
 .footer-col a.footer-link{margin-left:15px;font-size:1.2rem;color:var(--ink-dim);transition:color .3s;text-decoration:none;}
 .footer-col a.footer-link:hover,.footer-col a.footer-link:focus-visible{color:var(--accent-acid);}
-
-/* CTA HEADLINE */
 .cta-headline{font-family:var(--font-head);font-weight:700;text-transform:uppercase;font-size:var(--type-display-xl);line-height:.95;margin-bottom:2rem;letter-spacing:-.07em;color:var(--ink-graphite);text-align:left;}
+
+/* THEME SELECTOR STYLES */
+.theme-selector-group {
+    display: flex;
+    gap: 8px;
+    padding-right: 20px;
+    border-right: 1px solid var(--ink-ghost); /* Divider line */
+}
+
+.theme-chip {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    /* CHANGED: Use a dynamic border so it shows on dark backgrounds */
+    border: 1px solid var(--ink-dim); 
+    cursor: pointer;
+    transition: transform 0.2s ease, opacity 0.2s;
+    opacity: 0.5;
+}
+
+.theme-chip:hover {
+    transform: scale(1.3);
+    opacity: 1;
+}
 
 /* MEDIA QUERIES */
 @media(max-width:900px){
@@ -184,4 +207,7 @@ button.theme-toggle:hover,button.theme-toggle:focus-visible{color:var(--accent-a
     .grotesk,.cta-headline{word-break:break-word;}
     .acc-progress{left:-10px;width:3px;}
     .acc-data-grid{border-left:none;padding-left:0;margin-top:20px;border-top:1px solid var(--ink-ghost);padding-top:20px;}
+    
+    /* ADDED: Hide chips on mobile to save space */
+    .theme-selector-group { display: none; }
 }
