@@ -1,0 +1,59 @@
+{
+  "global": {
+    "hero_headline": "Small Cycle.<br><span class=\"accent-text\">Real Work.</span>",
+    "hero_sub": "Field support for educators.<br>Not student programs.<br><br>Nothing more. Nothing less.",
+    "cta_label": "Scroll to Map",
+    "link_tiktok": "https://tiktok.com/@yourhandle",
+    "link_instagram": "https://instagram.com/@yourhandle",
+    "link_patreon": "https://patreon.com/@yourhandle",
+    "sec1_title": "CORE FUNCTION",
+    "sec2_title": "DEPLOYMENT TRACKS",
+    "footer_email": "contact@yourdomain.com"
+  },
+  "grid": [
+    {
+      "marker": "[ ]",
+      "title": "Logistics",
+      "desc": "Permits, visas, and administrative drag. We handle the friction so you can work."
+    },
+    {
+      "marker": "#",
+      "title": "Network",
+      "desc": "Connections that are actually useful. No networking events. Just the contacts you need."
+    },
+    {
+      "marker": ">>>",
+      "title": "Funding",
+      "desc": "Capital for action, not promises. Funds move in days, not months."
+    }
+  ],
+  "tracks": [
+    {
+      "title": "LAB",
+      "meta": "FIELD RESEARCH",
+      "desc": "Small cycles. Field conditions. A student team runs a build -> test sequence.",
+      "loc": "CJK",
+      "attendees": "18-20",
+      "duration": "10 Days",
+      "freq": "Quarterly"
+    },
+    {
+      "title": "STUDIO",
+      "meta": "ARTS + PERFORMANCE",
+      "desc": "Local forms. Real practice. Students join a host studio and rehearse.",
+      "loc": "CJK",
+      "attendees": "18-20",
+      "duration": "10 Days",
+      "freq": "Quarterly"
+    },
+    {
+      "title": "PANEL",
+      "meta": "EDUCATOR EXCHANGE",
+      "desc": "Nodes. Systems. Coordination. An educator links with a local institution.",
+      "loc": "CJK",
+      "attendees": "5+",
+      "duration": "7 Days",
+      "freq": "Quarterly"
+    }
+  ]
+}
