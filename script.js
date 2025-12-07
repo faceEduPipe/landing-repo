@@ -131,46 +131,6 @@ function updateMethod(steps) {
 /* =========================================
    B. VISUAL ENGINE
    ========================================= */
-
-You are absolutely right. In the original script you pasted, that section was empty/commented out (// Your existing header observer logic here...), so I missed implementing it in the final version.
-
-This feature is what makes the text like // 01 — MANDATE turn from faint grey to solid black when you scroll past it.
-
-Here is the code to restore that function.
-
-The Fix: Add "Header Observer" to initVisuals
-In your script.js, find the initVisuals() function. Add this block of code at the bottom of that function (right before the closing }).
-
-JavaScript
-
-  // ... (Inside initVisuals, after the Reveal Observer) ...
-
-  // 5. HEADER AUTO-HIGHLIGHT (RESTORED)
-  // This looks for the .header-wrapper and lights up the .label-ghost text
-  const headerObserver = new IntersectionObserver(entries => {
-      entries.forEach(e => {
-          // Find the ghost text (e.g., "// 01 — MANDATE") inside the wrapper
-          const ghost = e.target.querySelector('.label-ghost');
-          
-          if(ghost) {
-              if (e.isIntersecting) {
-                  ghost.classList.add('is-solid'); // Matches your CSS (.label-ghost.is-solid)
-              } else {
-                  ghost.classList.remove('is-solid'); // Fades back out when scrolling away
-              }
-          }
-      });
-  }, { threshold: 0.5 }); // Trigger when the header is 50% on screen
-
-  // Start observing all headers
-  document.querySelectorAll('.header-wrapper').forEach(wrapper => {
-      headerObserver.observe(wrapper);
-  });
-The Complete initVisuals Function (With the Fix)
-If you prefer to just copy/paste the whole visual function to be safe, here is the complete updated version:
-
-JavaScript
-
 function initVisuals() {
   
   // 1. THEMES & SCROLL
