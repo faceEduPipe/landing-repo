@@ -1,5 +1,12 @@
 {
+  "name": "face-landing-fetcher",
+  "version": "1.0.0",
+  "description": "Fetches Google Sheet data",
+  "main": "fetch-data.js",
   "dependencies": {
-    "googleapis": "^126.0.0"
+    "googleapis": "^140.0.0"
+  },
+  "scripts": {
+    "start": "node fetch-data.js"
   }
 }
