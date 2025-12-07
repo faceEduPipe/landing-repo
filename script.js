@@ -1,5 +1,5 @@
 /**
- * FACE [SYS 4.0]
+ * FACE [SYS]
  * MASTER CONTROLLER
  * Status: FIXED (Links, Method, Animation, & Performance)
  */
@@ -112,7 +112,6 @@ function updateTracks(tracks) {
   });
 }
 
-// FIXED: Added Logic for Section 3
 function updateMethod(steps) {
     const container = document.querySelector('#method .grid-container');
     if (!container) return;
@@ -133,9 +132,48 @@ function updateMethod(steps) {
    B. VISUAL ENGINE
    ========================================= */
 
+You are absolutely right. In the original script you pasted, that section was empty/commented out (// Your existing header observer logic here...), so I missed implementing it in the final version.
+
+This feature is what makes the text like // 01 — MANDATE turn from faint grey to solid black when you scroll past it.
+
+Here is the code to restore that function.
+
+The Fix: Add "Header Observer" to initVisuals
+In your script.js, find the initVisuals() function. Add this block of code at the bottom of that function (right before the closing }).
+
+JavaScript
+
+  // ... (Inside initVisuals, after the Reveal Observer) ...
+
+  // 5. HEADER AUTO-HIGHLIGHT (RESTORED)
+  // This looks for the .header-wrapper and lights up the .label-ghost text
+  const headerObserver = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+          // Find the ghost text (e.g., "// 01 — MANDATE") inside the wrapper
+          const ghost = e.target.querySelector('.label-ghost');
+          
+          if(ghost) {
+              if (e.isIntersecting) {
+                  ghost.classList.add('is-solid'); // Matches your CSS (.label-ghost.is-solid)
+              } else {
+                  ghost.classList.remove('is-solid'); // Fades back out when scrolling away
+              }
+          }
+      });
+  }, { threshold: 0.5 }); // Trigger when the header is 50% on screen
+
+  // Start observing all headers
+  document.querySelectorAll('.header-wrapper').forEach(wrapper => {
+      headerObserver.observe(wrapper);
+  });
+The Complete initVisuals Function (With the Fix)
+If you prefer to just copy/paste the whole visual function to be safe, here is the complete updated version:
+
+JavaScript
+
 function initVisuals() {
   
-  // 1. THEMES & OPTIMIZED SCROLL
+  // 1. THEMES & SCROLL
   const themes = {
     'default': { '--accent-acid': '#60A5FA', '--accent-acid-ghost': 'rgba(96, 165, 250, 0.2)', 'light': { '--bg-concrete': '#F4F6F8', '--ink-graphite': '#0F172A' }, 'dark': { '--bg-concrete': '#0F1C2E', '--ink-graphite': '#F8FAFC' } },
     'green': { '--accent-acid': '#34D399', '--accent-acid-ghost': 'rgba(52, 211, 153, 0.2)', 'light': { '--bg-concrete': '#F2F2F0', '--ink-graphite': '#111' }, 'dark': { '--bg-concrete': '#0F1C2E', '--ink-graphite': '#F8FAFC' } },
@@ -163,7 +201,6 @@ function initVisuals() {
     root.style.setProperty('--ink-graphite', modeData['--ink-graphite']);
   }
 
-  // Throttle helper to save performance
   function throttle(func, limit) {
     let inThrottle;
     return function() {
@@ -189,11 +226,9 @@ function initVisuals() {
         lastActiveSection = active;
         globalColorIndex++; 
         let nextTheme = allowedCycle[globalColorIndex % allowedCycle.length];
-        
         const isFooter = active.tagName === 'FOOTER' || active.classList.contains('mega-footer');
         const shouldBeDark = darkSectionsIDs.includes(active.id) || active.classList.contains('hero') || isFooter;
         document.body.classList.toggle('dark-mode', shouldBeDark);
-        
         setTheme(nextTheme);
     }
   }
@@ -202,7 +237,7 @@ function initVisuals() {
   window.addEventListener('resize', throttle(updateTheme, 100));
   updateTheme(); 
 
-  // 2. ACCORDION (Timing Fixed)
+  // 2. ACCORDION
   const items = document.querySelectorAll('.acc-item');
   if(items.length > 0) {
     let currentIndex = 0;
@@ -234,9 +269,7 @@ function initVisuals() {
                 startTime = timestamp;
                 updateState((currentIndex + 1) % totalItems);
             }
-        } else {
-             startTime = timestamp; // Keep resetting start time while stopped
-        }
+        } else { startTime = timestamp; }
         requestAnimationFrame(loop);
     }
     requestAnimationFrame(loop);
@@ -257,18 +290,16 @@ function initVisuals() {
     }
   }
 
-  // 3. OBSERVERS (FIXED: Using 'is-visible')
+  // 3. REVEAL OBSERVER
   const revealObserver = new IntersectionObserver(entries => {
       entries.forEach(e => {
           if(e.isIntersecting) {
-             e.target.classList.add('is-visible'); // MATCHES CSS
-             e.target.classList.add('visible');    // BACKUP
-             e.target.style.opacity = '1';         // HARD FORCE
-             revealObserver.unobserve(e.target);   // Stop watching after reveal
+             e.target.classList.add('is-visible'); 
+             e.target.style.opacity = '1';         
+             revealObserver.unobserve(e.target);   
           }
       });
   }, { rootMargin: '-5% 0px', threshold: 0.05 });
-  
   document.querySelectorAll('.reveal-node').forEach(n => revealObserver.observe(n));
   
   // 4. REPLACEABLE WORDS
@@ -286,6 +317,24 @@ function initVisuals() {
             span.style.transform = 'translateY(0)';
         }, 300);
     }, 4000);
+  });
+
+  // 5. HEADER AUTO-HIGHLIGHT (FIXED & RESTORED)
+  const headerObserver = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+          const ghost = e.target.querySelector('.label-ghost');
+          if(ghost) {
+              if (e.isIntersecting) {
+                  ghost.classList.add('is-solid');
+              } else {
+                  ghost.classList.remove('is-solid');
+              }
+          }
+      });
+  }, { threshold: 0.5 }); 
+
+  document.querySelectorAll('.header-wrapper').forEach(wrapper => {
+      headerObserver.observe(wrapper);
   });
 }
 
