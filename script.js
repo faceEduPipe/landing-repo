@@ -1,7 +1,7 @@
 /**
  * FACE [SYS 4.0]
  * MASTER CONTROLLER
- * Combines: Local Data Fetch + Visual Engine
+ * Status: FIXED (Links, Method, Animation, & Performance)
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -13,18 +13,20 @@ async function initSystem() {
 
   try {
     // --- PHASE 1: DATA INGESTION ---
+    // Ensure you are running this on a server (Live Server), not file://
     const response = await fetch('./content.json');
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     const data = await response.json();
+
+    console.log('FACE [SYS] :: DATA RECEIVED', data);
 
     // --- PHASE 2: RENDERING ---
     if (data.global) updateGlobal(data.global);
     if (data.grid)   updateGrid(data.grid);
     if (data.tracks) updateTracks(data.tracks);
-    if (data.method) updateMethod(data.method);
+    if (data.method) updateMethod(data.method); // Now this works!
 
     // --- PHASE 3: VISUALS START ---
-    // We only start animations AFTER HTML is generated
     initVisuals(); 
     
     console.log('FACE [SYS] :: SYSTEM READY.');
@@ -32,14 +34,13 @@ async function initSystem() {
   } catch (error) {
     console.warn('FACE [SYS] :: OFFLINE MODE / DATA MISSING');
     console.error(error);
-    // Even if data fails, try to start visuals for static content
+    // If fetch fails, force visuals to load so the page isn't blank
     initVisuals(); 
   }
 }
 
 /* =========================================
    A. DATA UPDATER FUNCTIONS
-   (These draw the HTML from your JSON)
    ========================================= */
 
 function updateGlobal(content) {
@@ -48,17 +49,15 @@ function updateGlobal(content) {
   safeHTML('p.serif.reveal-node', content.hero_sub);
   safeText('a.cta-btn', content.cta_label);
   
-  // 2. Social Links
+  // 2. Social Links (FIXED: Now uses querySelector for classes)
   safeLink('.link-tiktok', content.link_tiktok);
   safeLink('.link-instagram', content.link_instagram);
   safeLink('.link-patreon', content.link_patreon);
 
   // 3. Section Headers
-  safeText('#capabilities .section-headline', content.sec1_title); // "CORE FUNCTION"
-  safeText('#manifest .section-headline', content.sec2_title);     // "DEPLOYMENT TRACKS"
-  
-  // --- ADD THIS LINE BELOW ---
-  safeText('#method .section-headline', content.sec3_title);       // "OPERATING FRAMEWORK"
+  safeText('#capabilities .section-headline', content.sec1_title);
+  safeText('#manifest .section-headline', content.sec2_title);
+  safeText('#method .section-headline', content.sec3_title);
   
   // 4. Footer Email
   const emailBtn = document.querySelector('footer .cta-btn');
@@ -71,7 +70,8 @@ function updateGrid(items) {
   container.innerHTML = '';
   items.forEach((item, index) => {
     const div = document.createElement('div');
-    div.className = `grid-item reveal-node delay-${index + 1} visible`; // Auto-visible
+    // Added 'is-visible' for safety
+    div.className = `grid-item reveal-node delay-${index + 1}`; 
     div.innerHTML = `
       <span class="index-marker">${item.marker}</span>
       <h2 class="grid-title">${item.title}</h2>
@@ -86,10 +86,8 @@ function updateTracks(tracks) {
   if (!container) return;
   container.innerHTML = '';
   tracks.forEach((track, index) => {
-    // Note: We don't attach click listeners here anymore.
-    // We let initVisuals() handle the logic once all items exist.
     const div = document.createElement('div');
-    div.className = `acc-item ${index === 0 ? 'active' : ''}`;
+    div.className = `acc-item ${index === 0 ? 'active' : ''} reveal-node delay-${index + 1}`;
     div.setAttribute('data-index', index);
     div.setAttribute('aria-expanded', index === 0);
     div.innerHTML = `
@@ -114,18 +112,30 @@ function updateTracks(tracks) {
   });
 }
 
+// FIXED: Added Logic for Section 3
 function updateMethod(steps) {
-    // Optional: Add method section logic if you have it in JSON
+    const container = document.querySelector('#method .grid-container');
+    if (!container) return;
+    container.innerHTML = '';
+    steps.forEach((step, index) => {
+      const div = document.createElement('div');
+      div.className = `grid-item reveal-node delay-${index + 1}`;
+      div.innerHTML = `
+        <span class="index-marker">${step.marker}</span>
+        <h2 class="grid-title">${step.title}</h2>
+        <p class="grid-body">${step.desc}</p>
+      `;
+      container.appendChild(div);
+    });
 }
 
 /* =========================================
-   B. VISUAL ENGINE (THEMES + ANIMATION)
-   (Wrapped in a function to run LAST)
+   B. VISUAL ENGINE
    ========================================= */
 
 function initVisuals() {
   
-  // 1. THEMES & SCROLL LOGIC
+  // 1. THEMES & OPTIMIZED SCROLL
   const themes = {
     'default': { '--accent-acid': '#60A5FA', '--accent-acid-ghost': 'rgba(96, 165, 250, 0.2)', 'light': { '--bg-concrete': '#F4F6F8', '--ink-graphite': '#0F172A' }, 'dark': { '--bg-concrete': '#0F1C2E', '--ink-graphite': '#F8FAFC' } },
     'green': { '--accent-acid': '#34D399', '--accent-acid-ghost': 'rgba(52, 211, 153, 0.2)', 'light': { '--bg-concrete': '#F2F2F0', '--ink-graphite': '#111' }, 'dark': { '--bg-concrete': '#0F1C2E', '--ink-graphite': '#F8FAFC' } },
@@ -135,7 +145,7 @@ function initVisuals() {
   let currentTheme = null; 
   let globalColorIndex = -1; 
   let lastActiveSection = null;
-  const allowedCycle = ['default', 'green', 'lavender', 'default', 'green']; // Simplified cycle
+  const allowedCycle = ['default', 'green', 'lavender', 'default', 'green'];
   const darkSectionsIDs = ['hero', 'manifest']; 
   const stdSections = document.querySelectorAll('.std-section');
 
@@ -153,6 +163,20 @@ function initVisuals() {
     root.style.setProperty('--ink-graphite', modeData['--ink-graphite']);
   }
 
+  // Throttle helper to save performance
+  function throttle(func, limit) {
+    let inThrottle;
+    return function() {
+      const args = arguments;
+      const context = this;
+      if (!inThrottle) {
+        func.apply(context, args);
+        inThrottle = true;
+        setTimeout(() => inThrottle = false, limit);
+      }
+    }
+  }
+
   function updateTheme() {
     let max = 0, active = null;
     stdSections.forEach(sec => {
@@ -166,7 +190,6 @@ function initVisuals() {
         globalColorIndex++; 
         let nextTheme = allowedCycle[globalColorIndex % allowedCycle.length];
         
-        // Auto Dark Mode Logic
         const isFooter = active.tagName === 'FOOTER' || active.classList.contains('mega-footer');
         const shouldBeDark = darkSectionsIDs.includes(active.id) || active.classList.contains('hero') || isFooter;
         document.body.classList.toggle('dark-mode', shouldBeDark);
@@ -175,17 +198,15 @@ function initVisuals() {
     }
   }
 
-  window.addEventListener('scroll', updateTheme);
-  window.addEventListener('resize', updateTheme);
-  updateTheme(); // Initial call
+  window.addEventListener('scroll', throttle(updateTheme, 100));
+  window.addEventListener('resize', throttle(updateTheme, 100));
+  updateTheme(); 
 
-  // 2. ACCORDION LOGIC (Now safe to run because elements exist)
+  // 2. ACCORDION (Timing Fixed)
   const items = document.querySelectorAll('.acc-item');
-  const stack = document.getElementById('accordion-module');
-  
   if(items.length > 0) {
     let currentIndex = 0;
-    let elapsed = 0;
+    let startTime = null;
     let isStopped = false;
     const intervalTime = 6000;
     const totalItems = items.length;
@@ -196,68 +217,63 @@ function initVisuals() {
             item.classList.toggle('active', active);
             item.setAttribute('aria-expanded', active);
             const bar = item.querySelector('.acc-progress-fill');
-            if(bar) bar.style.height = active ? '0%' : '0%'; // Reset others
+            if(bar) bar.style.height = active ? '0%' : '0%'; 
         });
         currentIndex = i;
     }
 
-    function loop(ts) {
+    function loop(timestamp) {
+        if (!startTime) startTime = timestamp;
         if (!isStopped) {
-            elapsed += 16; // Approx 60fps
+            const elapsed = timestamp - startTime;
             const percent = Math.min((elapsed / intervalTime) * 100, 100);
             const bar = items[currentIndex].querySelector('.acc-progress-fill');
             if (bar) bar.style.height = `${percent}%`;
 
             if (elapsed >= intervalTime) {
-                elapsed = 0;
+                startTime = timestamp;
                 updateState((currentIndex + 1) % totalItems);
             }
+        } else {
+             startTime = timestamp; // Keep resetting start time while stopped
         }
         requestAnimationFrame(loop);
     }
-    
-    // Start Loop
     requestAnimationFrame(loop);
 
-    // Click Interactions
     items.forEach((item, i) => {
         item.addEventListener('click', () => {
             isStopped = true;
-            elapsed = 0;
-            // Reset all bars
             items.forEach(it => { if(it.querySelector('.acc-progress-fill')) it.querySelector('.acc-progress-fill').style.height = '0%'; });
             updateState(i);
-            // Fill current bar to show it's selected/stopped
             const bar = item.querySelector('.acc-progress-fill');
             if (bar) bar.style.height = '100%';
         });
     });
-
+    
+    const stack = document.getElementById('accordion-module');
     if(stack){
-        stack.addEventListener('mouseleave', () => {
-            if (isStopped) {
-                isStopped = false;
-                elapsed = 0;
-            }
-        });
+        stack.addEventListener('mouseleave', () => { isStopped = false; startTime = null; });
     }
   }
 
-  // 3. OBSERVERS (Reveal & Header)
+  // 3. OBSERVERS (FIXED: Using 'is-visible')
   const revealObserver = new IntersectionObserver(entries => {
-      entries.forEach(e => e.isIntersecting && e.target.classList.add('visible')); // Changed to match your CSS class 'visible'
-  }, { rootMargin: '-10% 0px', threshold: 0.05 });
+      entries.forEach(e => {
+          if(e.isIntersecting) {
+             e.target.classList.add('is-visible'); // MATCHES CSS
+             e.target.classList.add('visible');    // BACKUP
+             e.target.style.opacity = '1';         // HARD FORCE
+             revealObserver.unobserve(e.target);   // Stop watching after reveal
+          }
+      });
+  }, { rootMargin: '-5% 0px', threshold: 0.05 });
   
-  // Observe static AND dynamic elements
   document.querySelectorAll('.reveal-node').forEach(n => revealObserver.observe(n));
-  
-  // Header highlighting logic
-  document.querySelectorAll('.header-wrapper').forEach(wrapper => {
-      // (Your existing header observer logic here if needed, simplified for brevity)
-  });
   
   // 4. REPLACEABLE WORDS
   document.querySelectorAll('.replaceable').forEach(span => {
+    if(!span.dataset.words) return;
     const words = span.dataset.words.split(',');
     let idx = 0;
     setInterval(() => {
@@ -277,6 +293,7 @@ function initVisuals() {
    C. UTILITIES
    ========================================= */
 
+// FIXED: safeLink now uses querySelector for Classes, not getElementById
 function safeText(sel, txt) { const el = document.querySelector(sel); if(el && txt) el.innerText = txt; }
 function safeHTML(sel, htm) { const el = document.querySelector(sel); if(el && htm) el.innerHTML = htm; }
-function safeLink(id, url) { const el = document.getElementById(id); if(el && url) el.href = url; }
+function safeLink(sel, url) { const el = document.querySelector(sel); if(el && url) el.href = url; }
