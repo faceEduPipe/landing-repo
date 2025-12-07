@@ -1,14 +1,15 @@
 {
   "global": {
-    "hero_headline": "Small Cycle.<br><span class=\"accent-text\">Real Work.</span>",
-    "hero_sub": "Field support for educators.<br>Not student programs.<br><br>Nothing more. Nothing less.",
-    "cta_label": "Scroll to Map",
-    "link_tiktok": "https://tiktok.com/@yourhandle",
-    "link_instagram": "https://instagram.com/@yourhandle",
-    "link_patreon": "https://patreon.com/@yourhandle",
-    "sec1_title": "CORE FUNCTION",
-    "sec2_title": "DEPLOYMENT TRACKS",
-    "footer_email": "contact@yourdomain.com"
+    "2": "hero_headline",
+    "3": "hero_sub",
+    "4": "cta_label",
+    "5": "link_tiktok",
+    "6": "link_instagram",
+    "7": "link_patreon",
+    "8": "sec1_title",
+    "9": "sec2_title",
+    "10": "sec3_title",
+    "11": "footer_email"
   },
   "grid": [
     {
@@ -31,29 +32,46 @@
     {
       "title": "LAB",
       "meta": "FIELD RESEARCH",
-      "desc": "Small cycles. Field conditions. A student team runs a build -> test sequence.",
+      "desc": "Small cycles. Field conditions. A student team runs a build → test sequence with a partner site.",
       "loc": "CJK",
-      "attendees": "18-20",
+      "attendees": "18–20",
       "duration": "10 Days",
       "freq": "Quarterly"
     },
     {
       "title": "STUDIO",
       "meta": "ARTS + PERFORMANCE",
-      "desc": "Local forms. Real practice. Students join a host studio and rehearse.",
+      "desc": "Local forms. Real practice. Students join a host studio, rehearse a short piece, and deliver a clean showing.",
       "loc": "CJK",
-      "attendees": "18-20",
+      "attendees": "18–20",
       "duration": "10 Days",
       "freq": "Quarterly"
     },
     {
       "title": "PANEL",
       "meta": "EDUCATOR EXCHANGE",
-      "desc": "Nodes. Systems. Coordination. An educator links with a local institution.",
+      "desc": "Nodes. Systems. Coordination. An educator links with a local institution and sets a shared route.",
       "loc": "CJK",
       "attendees": "5+",
       "duration": "7 Days",
       "freq": "Quarterly"
+    }
+  ],
+  "method": [
+    {
+      "marker": "1",
+      "title": "Input",
+      "desc": "You define the project parameters. We provide the framework."
+    },
+    {
+      "marker": "2",
+      "title": "Integration",
+      "desc": "Your curriculum plugs into our network. Logistics, funding, and access aligned."
+    },
+    {
+      "marker": "3",
+      "title": "Deployment",
+      "desc": "Field execution. Real stakes. Students and educators gain hands-on experience."
     }
   ]
 }
