@@ -43,17 +43,24 @@ async function initSystem() {
    ========================================= */
 
 function updateGlobal(content) {
+  // 1. Hero Section
   safeHTML('h1.reveal-node', content.hero_headline);
   safeHTML('p.serif.reveal-node', content.hero_sub);
   safeText('a.cta-btn', content.cta_label);
   
-  safeLink('link-tiktok', content.link_tiktok);
-  safeLink('link-instagram', content.link_instagram);
-  safeLink('link-patreon', content.link_patreon);
+  // 2. Social Links
+  safeLink('.link-tiktok', content.link_tiktok);
+  safeLink('.link-instagram', content.link_instagram);
+  safeLink('.link-patreon', content.link_patreon);
 
-  safeText('#capabilities .section-headline', content.sec1_title);
-  safeText('#manifest .section-headline', content.sec2_title);
+  // 3. Section Headers
+  safeText('#capabilities .section-headline', content.sec1_title); // "CORE FUNCTION"
+  safeText('#manifest .section-headline', content.sec2_title);     // "DEPLOYMENT TRACKS"
   
+  // --- ADD THIS LINE BELOW ---
+  safeText('#method .section-headline', content.sec3_title);       // "OPERATING FRAMEWORK"
+  
+  // 4. Footer Email
   const emailBtn = document.querySelector('footer .cta-btn');
   if (emailBtn && content.footer_email) emailBtn.href = `mailto:${content.footer_email}`;
 }
