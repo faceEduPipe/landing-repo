@@ -1,9 +1,8 @@
-/* ------------------------
-   1. THEME CALIBRATOR (LOGIC)
-------------------------- */
-// This handles the Color Chips + Day/Night Toggle
+/* =========================================
+   1. THEME DEFINITIONS (ACADEMIC PALETTE)
+   ========================================= */
 const themes = {
-    'default': { // BLUEPRINT (Blue/Navy)
+    'default': { // BLUEPRINT (Blue/Navy) - HERO DEFAULT
         '--accent-acid': '#60A5FA', 
         '--accent-acid-ghost': 'rgba(96, 165, 250, 0.2)',
         'light': { '--bg-concrete': '#F4F6F8', '--ink-graphite': '#0F172A' },
@@ -12,18 +11,19 @@ const themes = {
     'green': { // FIELD (Green/Olive)
         '--accent-acid': '#34D399',
         '--accent-acid-ghost': 'rgba(52, 211, 153, 0.2)',
-        'light': { '--bg-concrete': '#F2F2F0', '--ink-graphite': '#111' }, // Concrete
-        'dark':  { '--bg-concrete': '#0F1C2E', '--ink-graphite': '#F8FAFC' } // Navy
+        'light': { '--bg-concrete': '#F2F2F0', '--ink-graphite': '#111' }, 
+        'dark':  { '--bg-concrete': '#0F1C2E', '--ink-graphite': '#F8FAFC' } 
     },
     'lavender': { // RESEARCH (Purple/Clean)
         '--accent-acid': '#A78BFA',
         '--accent-acid-ghost': 'rgba(167, 139, 250, 0.2)',
-        'light': { '--bg-concrete': '#F4F6F8', '--ink-graphite': '#0F172A' }, // Cool White
-        'dark':  { '--bg-concrete': '#0F1C2E', '--ink-graphite': '#F8FAFC' } // Navy
+        'light': { '--bg-concrete': '#F4F6F8', '--ink-graphite': '#0F172A' }, 
+        'dark':  { '--bg-concrete': '#0F1C2E', '--ink-graphite': '#F8FAFC' } 
     }
 };
 
-let currentTheme = 'default';
+// Initialize as NULL so the first check doesn't skip 'default'
+let currentTheme = null; 
 
 function setTheme(themeName) {
     currentTheme = themeName;
@@ -31,38 +31,40 @@ function setTheme(themeName) {
 }
 
 function applyTheme() {
+    if(!currentTheme) return; // Safety check
     const root = document.documentElement;
     const themeData = themes[currentTheme];
     const isDark = document.body.classList.contains('dark-mode');
 
-    // 1. Apply the Accent Colors (Same for both modes)
+    // 1. Apply Accent Colors
     root.style.setProperty('--accent-acid', themeData['--accent-acid']);
     root.style.setProperty('--accent-acid-ghost', themeData['--accent-acid-ghost']);
 
-    // 2. Apply Background/Text based on Mode
+    // 2. Apply Background Based on Mode
     const modeData = isDark ? themeData.dark : themeData.light;
     root.style.setProperty('--bg-concrete', modeData['--bg-concrete']);
     root.style.setProperty('--ink-graphite', modeData['--ink-graphite']);
 }
 
 
-/* ------------------------
-   2. CONTINUOUS COLOR CYCLE (NEXT ACCENT ON SCROLL)
-------------------------- */
-const allowedCycle = ['default', 'green', 'lavender'];
+/* =========================================
+   2. SMART CONTINUOUS SCROLL (FIXED START)
+   ========================================= */
+const allowedCycle = ['default', 'green', 'lavender', 'gold', 'red'];
 
-// Track the state
-let globalColorIndex = 0; 
+// START AT -1: So the first scroll/load becomes 0 ('default' / Blue)
+let globalColorIndex = -1; 
 let lastActiveSection = null;
 
-// Fixed Dark Mode Sections (Background doesn't cycle, only Accent cycles)
-const darkSections = ['hero', 'manifest', 'mega-footer'];
+// Force these IDs/Classes to use Dark Mode (Navy Background)
+const darkSectionsIDs = ['hero', 'manifest']; 
+
 const stdSections = document.querySelectorAll('.std-section');
 
 function updateTheme() {
     let max = 0, active = null;
 
-    // 1. Find the currently visible section
+    // 1. Find visible section
     stdSections.forEach(sec => {
         const rect = sec.getBoundingClientRect();
         const visible = Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0);
@@ -72,41 +74,43 @@ function updateTheme() {
         }
     });
 
-    // 2. Only trigger if we have ENTERED a new section
+    // 2. Trigger updates only when entering new section
     if (active && active !== lastActiveSection) {
-        
-        // A. Update the Tracker
         lastActiveSection = active;
 
-        // B. Advance the Color Cycle (Always moves forward: 0 -> 1 -> 2 -> 0...)
-        // We increment the index every time a section changes
-        const nextTheme = allowedCycle[globalColorIndex % allowedCycle.length];
-        globalColorIndex++; // Prepare for next time
+        // A. SMART CYCLE: Pick next color
+        globalColorIndex++; 
+        let nextTheme = allowedCycle[globalColorIndex % allowedCycle.length];
 
-        // C. Handle Dark/Light Background (Fixed to Section ID)
-        const sectionId = active.id || (active.classList.contains('hero') ? 'hero' : 'footer');
-        const shouldBeDark = darkSections.includes(sectionId);
+        // CHECK: If the new color is the same as the CURRENT color, skip to the next one
+        if(nextTheme === currentTheme) {
+            globalColorIndex++;
+            nextTheme = allowedCycle[globalColorIndex % allowedCycle.length];
+        }
+
+        // B. HANDLE DARK MODE (Navy Background)
+        const isFooter = active.tagName === 'FOOTER' || active.classList.contains('mega-footer');
+        const shouldBeDark = darkSectionsIDs.includes(active.id) || active.classList.contains('hero') || isFooter;
         
         document.body.classList.toggle('dark-mode', shouldBeDark);
 
-        // D. Apply the New Cycle Color
+        // C. APPLY THEMES
         setTheme(nextTheme);
-        
-        // Force re-apply to ensure background mode updates correctly
-        applyTheme();
+        applyTheme(); 
     }
 }
 
 window.addEventListener('scroll', updateTheme);
 window.addEventListener('resize', updateTheme);
+// Trigger once on load to set Hero = Blue
+updateTheme(); 
 
-// Initialize
-updateTheme();
 
+/* =========================================
+   3. ANIMATIONS & UTILITIES
+   ========================================= */
 
-/* ------------------------
-   3. AUTO-HIGHLIGHT WORDS
-------------------------- */
+// Auto-Highlight Words
 function autohighlight(el) {
     if (!el.querySelector('.stagger-word')) {
         el.innerHTML = el.textContent
@@ -124,15 +128,13 @@ function autohighlight(el) {
     });
 }
 
-/* ------------------------
-   4. REVEAL & HEADER OBSERVER
-------------------------- */
+// Reveal Observer
 const revealObserver = new IntersectionObserver(entries => {
     entries.forEach(e => e.isIntersecting && e.target.classList.add('is-visible'));
 }, { rootMargin: '-10% 0px -10% 0px', threshold: 0.05 });
-
 document.querySelectorAll('.reveal-node').forEach(n => revealObserver.observe(n));
 
+// Header Observer
 const headerObserver = new IntersectionObserver(entries => {
     entries.forEach(e => {
         const label = e.target.querySelector('.label-ghost');
@@ -144,13 +146,9 @@ const headerObserver = new IntersectionObserver(entries => {
         } else label?.classList.remove('is-solid');
     });
 }, { rootMargin: '-30% 0px -30% 0px' });
-
 document.querySelectorAll('.header-wrapper').forEach(n => headerObserver.observe(n));
 
-
-/* ------------------------
-   5. ACCORDION AUTOPLAY
-------------------------- */
+// Accordion Autoplay
 const items = document.querySelectorAll('.acc-item');
 let currentIndex = 0;
 let elapsed = 0;
@@ -186,7 +184,6 @@ function loop(ts) {
     if (!isStopped) {
         elapsed += delta;
         const percent = Math.min((elapsed / intervalTime) * 100, 100);
-
         const bar = items[currentIndex].querySelector('.acc-progress-fill');
         if (bar) bar.style.height = `${percent}%`;
 
@@ -195,14 +192,15 @@ function loop(ts) {
             restartTimer();
         }
     }
-
     requestAnimationFrame(loop);
 }
 
-updateState(currentIndex);
-requestAnimationFrame(loop);
+if(items.length > 0) {
+    updateState(currentIndex);
+    requestAnimationFrame(loop);
+}
 
-// Interaction
+// Accordion Interaction
 items.forEach((item, i) => {
     item.addEventListener('click', () => {
         isStopped = true;
@@ -212,7 +210,6 @@ items.forEach((item, i) => {
         if (bar) bar.style.height = '100%';
     });
 });
-
 const stack = document.getElementById('accordion-module');
 if(stack){
     stack.addEventListener('mouseleave', () => {
@@ -224,9 +221,7 @@ if(stack){
     });
 }
 
-/* ------------------------
-   6. REPLACEABLE WORDS
-------------------------- */
+// Replaceable Words
 document.querySelectorAll('.replaceable').forEach(span => {
     const words = span.dataset.words.split(',');
     let idx = 0;
