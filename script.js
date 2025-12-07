@@ -1,7 +1,7 @@
 /**
- * FACE [SYS 4.0]
+ * FACE [SYS]
  * MASTER CONTROLLER
- * Status: FINAL | All Modules Active
+ * Status: FINAL | Visual Logic Restored
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -13,12 +13,9 @@ async function initSystem() {
 
   try {
     // 1. DATA INGESTION
-    // Ensure you are running on a server (http://) for fetch to work
     const response = await fetch('./content.json');
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     const data = await response.json();
-
-    console.log('FACE [SYS] :: DATA RECEIVED', data);
 
     // 2. RENDERING
     if (data.global) updateGlobal(data.global);
@@ -34,7 +31,6 @@ async function initSystem() {
   } catch (error) {
     console.warn('FACE [SYS] :: OFFLINE MODE / DATA MISSING');
     console.error(error);
-    // Force visuals if data fails
     initVisuals(); 
   }
 }
@@ -127,7 +123,7 @@ function updateMethod(steps) {
 }
 
 /* =========================================
-   B. VISUAL ENGINE (ALL LOGIC INCLUDED)
+   B. VISUAL ENGINE (RESTORED LOGIC)
    ========================================= */
 
 function initVisuals() {
@@ -280,16 +276,38 @@ function initVisuals() {
     }, 4000);
   });
 
-  // 5. HEADER AUTO-HIGHLIGHT (The "Ghost" Text)
+  // 5. AUTO-HIGHLIGHT (Title Flashing Logic - RESTORED)
+  function autohighlight(el) {
+    if (!el.querySelector('.stagger-word')) {
+        el.innerHTML = el.textContent
+            .split(' ').filter(w => w)
+            .map((w, i) => `<span class="stagger-word" data-word-index="${i}">${w}</span>`)
+            .join(' ');
+    }
+    el.querySelectorAll('.stagger-word').forEach((w, i, arr) => {
+        // Highlight first, last, or numbers
+        if (i === 0 || i === arr.length - 1 || /\d/.test(w.textContent)) {
+            setTimeout(() => {
+                w.classList.add('highlight-word');
+                setTimeout(() => w.classList.remove('highlight-word'), 400);
+            }, 100 + 80 * i);
+        }
+    });
+  }
+
+  // 6. HEADER OBSERVER (Ghost Text + Title Highlight)
   const headerObserver = new IntersectionObserver(entries => {
       entries.forEach(e => {
-          const ghost = e.target.querySelector('.label-ghost');
-          if(ghost) {
-              if (e.isIntersecting) {
-                  ghost.classList.add('is-solid');
-              } else {
-                  ghost.classList.remove('is-solid');
-              }
+          // Find the ghost text and the headline inside the wrapper
+          const label = e.target.querySelector('.label-ghost');
+          const title = e.target.querySelector('.section-headline.autohighlight-node');
+
+          if (e.isIntersecting) {
+              if(label) label.classList.add('is-solid');
+              if(title) autohighlight(title); // This triggers the word flash
+              if(label) autohighlight(label); // This triggers the ghost text flash
+          } else {
+              if(label) label.classList.remove('is-solid');
           }
       });
   }, { threshold: 0.5 }); 
