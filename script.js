@@ -1,7 +1,7 @@
 /**
- * FACE [SYS]
+ * FACE [SYS 4.0]
  * MASTER CONTROLLER
- * Status: FIXED (Links, Method, Animation, & Performance)
+ * Status: FINAL | All Modules Active
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -12,21 +12,21 @@ async function initSystem() {
   console.log('FACE [SYS] :: INITIALIZING...');
 
   try {
-    // --- PHASE 1: DATA INGESTION ---
-    // Ensure you are running this on a server (Live Server), not file://
+    // 1. DATA INGESTION
+    // Ensure you are running on a server (http://) for fetch to work
     const response = await fetch('./content.json');
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     const data = await response.json();
 
     console.log('FACE [SYS] :: DATA RECEIVED', data);
 
-    // --- PHASE 2: RENDERING ---
+    // 2. RENDERING
     if (data.global) updateGlobal(data.global);
     if (data.grid)   updateGrid(data.grid);
     if (data.tracks) updateTracks(data.tracks);
-    if (data.method) updateMethod(data.method); // Now this works!
+    if (data.method) updateMethod(data.method);
 
-    // --- PHASE 3: VISUALS START ---
+    // 3. VISUAL ENGINE
     initVisuals(); 
     
     console.log('FACE [SYS] :: SYSTEM READY.');
@@ -34,7 +34,7 @@ async function initSystem() {
   } catch (error) {
     console.warn('FACE [SYS] :: OFFLINE MODE / DATA MISSING');
     console.error(error);
-    // If fetch fails, force visuals to load so the page isn't blank
+    // Force visuals if data fails
     initVisuals(); 
   }
 }
@@ -44,22 +44,21 @@ async function initSystem() {
    ========================================= */
 
 function updateGlobal(content) {
-  // 1. Hero Section
   safeHTML('h1.reveal-node', content.hero_headline);
   safeHTML('p.serif.reveal-node', content.hero_sub);
   safeText('a.cta-btn', content.cta_label);
   
-  // 2. Social Links (FIXED: Now uses querySelector for classes)
+  // Social Links
   safeLink('.link-tiktok', content.link_tiktok);
   safeLink('.link-instagram', content.link_instagram);
   safeLink('.link-patreon', content.link_patreon);
 
-  // 3. Section Headers
+  // Section Headers
   safeText('#capabilities .section-headline', content.sec1_title);
   safeText('#manifest .section-headline', content.sec2_title);
   safeText('#method .section-headline', content.sec3_title);
   
-  // 4. Footer Email
+  // Footer Email
   const emailBtn = document.querySelector('footer .cta-btn');
   if (emailBtn && content.footer_email) emailBtn.href = `mailto:${content.footer_email}`;
 }
@@ -70,7 +69,6 @@ function updateGrid(items) {
   container.innerHTML = '';
   items.forEach((item, index) => {
     const div = document.createElement('div');
-    // Added 'is-visible' for safety
     div.className = `grid-item reveal-node delay-${index + 1}`; 
     div.innerHTML = `
       <span class="index-marker">${item.marker}</span>
@@ -129,8 +127,9 @@ function updateMethod(steps) {
 }
 
 /* =========================================
-   B. VISUAL ENGINE
+   B. VISUAL ENGINE (ALL LOGIC INCLUDED)
    ========================================= */
+
 function initVisuals() {
   
   // 1. THEMES & SCROLL
@@ -186,9 +185,11 @@ function initVisuals() {
         lastActiveSection = active;
         globalColorIndex++; 
         let nextTheme = allowedCycle[globalColorIndex % allowedCycle.length];
+        
         const isFooter = active.tagName === 'FOOTER' || active.classList.contains('mega-footer');
         const shouldBeDark = darkSectionsIDs.includes(active.id) || active.classList.contains('hero') || isFooter;
         document.body.classList.toggle('dark-mode', shouldBeDark);
+        
         setTheme(nextTheme);
     }
   }
@@ -250,7 +251,7 @@ function initVisuals() {
     }
   }
 
-  // 3. REVEAL OBSERVER
+  // 3. REVEAL OBSERVER (Fades in text)
   const revealObserver = new IntersectionObserver(entries => {
       entries.forEach(e => {
           if(e.isIntersecting) {
@@ -262,7 +263,7 @@ function initVisuals() {
   }, { rootMargin: '-5% 0px', threshold: 0.05 });
   document.querySelectorAll('.reveal-node').forEach(n => revealObserver.observe(n));
   
-  // 4. REPLACEABLE WORDS
+  // 4. REPLACEABLE WORDS (Animation for "Essential / Practice")
   document.querySelectorAll('.replaceable').forEach(span => {
     if(!span.dataset.words) return;
     const words = span.dataset.words.split(',');
@@ -279,7 +280,7 @@ function initVisuals() {
     }, 4000);
   });
 
-  // 5. HEADER AUTO-HIGHLIGHT (FIXED & RESTORED)
+  // 5. HEADER AUTO-HIGHLIGHT (The "Ghost" Text)
   const headerObserver = new IntersectionObserver(entries => {
       entries.forEach(e => {
           const ghost = e.target.querySelector('.label-ghost');
@@ -302,7 +303,6 @@ function initVisuals() {
    C. UTILITIES
    ========================================= */
 
-// FIXED: safeLink now uses querySelector for Classes, not getElementById
 function safeText(sel, txt) { const el = document.querySelector(sel); if(el && txt) el.innerText = txt; }
 function safeHTML(sel, htm) { const el = document.querySelector(sel); if(el && htm) el.innerHTML = htm; }
 function safeLink(sel, url) { const el = document.querySelector(sel); if(el && url) el.href = url; }
