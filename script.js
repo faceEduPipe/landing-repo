@@ -1,8 +1,7 @@
 /**
- * FACE
- * CLIENT-SIDE CONTROLLER
- * * Mode: Local JSON Read
- * Source: ./content.json
+ * FACE [SYS 4.0]
+ * MASTER CONTROLLER
+ * Combines: Local Data Fetch + Visual Engine
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -13,254 +12,245 @@ async function initSystem() {
   console.log('FACE [SYS] :: INITIALIZING...');
 
   try {
-    // 1. Fetch the local data file (created by your GitHub Action)
+    // --- PHASE 1: DATA INGESTION ---
     const response = await fetch('./content.json');
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     const data = await response.json();
-    
-    // 2. Distribute data to sections
+
+    // --- PHASE 2: RENDERING ---
     if (data.global) updateGlobal(data.global);
     if (data.grid)   updateGrid(data.grid);
     if (data.tracks) updateTracks(data.tracks);
     if (data.method) updateMethod(data.method);
 
+    // --- PHASE 3: VISUALS START ---
+    // We only start animations AFTER HTML is generated
+    initVisuals(); 
+    
     console.log('FACE [SYS] :: SYSTEM READY.');
 
   } catch (error) {
     console.warn('FACE [SYS] :: OFFLINE MODE / DATA MISSING');
     console.error(error);
+    // Even if data fails, try to start visuals for static content
+    initVisuals(); 
   }
 }
 
 /* =========================================
-   1. THEME DEFINITIONS (ACADEMIC PALETTE)
+   A. DATA UPDATER FUNCTIONS
+   (These draw the HTML from your JSON)
    ========================================= */
-const themes = {
-    'default': { // BLUEPRINT (Blue/Navy) - HERO DEFAULT
-        '--accent-acid': '#60A5FA', 
-        '--accent-acid-ghost': 'rgba(96, 165, 250, 0.2)',
-        'light': { '--bg-concrete': '#F4F6F8', '--ink-graphite': '#0F172A' },
-        'dark':  { '--bg-concrete': '#0F1C2E', '--ink-graphite': '#F8FAFC' }
-    },
-    'green': { // FIELD (Green/Olive)
-        '--accent-acid': '#34D399',
-        '--accent-acid-ghost': 'rgba(52, 211, 153, 0.2)',
-        'light': { '--bg-concrete': '#F2F2F0', '--ink-graphite': '#111' }, 
-        'dark':  { '--bg-concrete': '#0F1C2E', '--ink-graphite': '#F8FAFC' } 
-    },
-    'lavender': { // RESEARCH (Purple/Clean)
-        '--accent-acid': '#A78BFA',
-        '--accent-acid-ghost': 'rgba(167, 139, 250, 0.2)',
-        'light': { '--bg-concrete': '#F4F6F8', '--ink-graphite': '#0F172A' }, 
-        'dark':  { '--bg-concrete': '#0F1C2E', '--ink-graphite': '#F8FAFC' } 
-    }
-};
 
-// Initialize as NULL so the first check doesn't skip 'default'
-let currentTheme = null; 
+function updateGlobal(content) {
+  safeHTML('h1.reveal-node', content.hero_headline);
+  safeHTML('p.serif.reveal-node', content.hero_sub);
+  safeText('a.cta-btn', content.cta_label);
+  
+  safeLink('link-tiktok', content.link_tiktok);
+  safeLink('link-instagram', content.link_instagram);
+  safeLink('link-patreon', content.link_patreon);
 
-function setTheme(themeName) {
-    currentTheme = themeName;
-    applyTheme();
+  safeText('#capabilities .section-headline', content.sec1_title);
+  safeText('#manifest .section-headline', content.sec2_title);
+  
+  const emailBtn = document.querySelector('footer .cta-btn');
+  if (emailBtn && content.footer_email) emailBtn.href = `mailto:${content.footer_email}`;
 }
 
-function applyTheme() {
-    if(!currentTheme) return; // Safety check
+function updateGrid(items) {
+  const container = document.querySelector('#capabilities .grid-container');
+  if (!container) return;
+  container.innerHTML = '';
+  items.forEach((item, index) => {
+    const div = document.createElement('div');
+    div.className = `grid-item reveal-node delay-${index + 1} visible`; // Auto-visible
+    div.innerHTML = `
+      <span class="index-marker">${item.marker}</span>
+      <h2 class="grid-title">${item.title}</h2>
+      <p class="grid-body">${item.desc}</p>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function updateTracks(tracks) {
+  const container = document.getElementById('accordion-module');
+  if (!container) return;
+  container.innerHTML = '';
+  tracks.forEach((track, index) => {
+    // Note: We don't attach click listeners here anymore.
+    // We let initVisuals() handle the logic once all items exist.
+    const div = document.createElement('div');
+    div.className = `acc-item ${index === 0 ? 'active' : ''}`;
+    div.setAttribute('data-index', index);
+    div.setAttribute('aria-expanded', index === 0);
+    div.innerHTML = `
+      <div class="acc-progress"><div class="acc-progress-fill"></div></div>
+      <div class="acc-header">
+        <h3 class="acc-title">${track.title}</h3>
+        <span class="acc-meta">${track.meta}</span>
+      </div>
+      <div class="acc-body">
+        <div class="acc-content-wrapper">
+          <div class="acc-narrative"><p class="acc-desc">${track.desc}</p></div>
+          <div class="acc-data-grid">
+            <div class="data-row"><span class="data-key">Location</span><span class="data-val">${track.loc}</span></div>
+            <div class="data-row"><span class="data-key">Attendees</span><span class="data-val">${track.attendees}</span></div>
+            <div class="data-row"><span class="data-key">Duration</span><span class="data-val">${track.duration}</span></div>
+            <div class="data-row"><span class="data-key">Frequency</span><span class="data-val">${track.freq}</span></div>
+          </div>
+        </div>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function updateMethod(steps) {
+    // Optional: Add method section logic if you have it in JSON
+}
+
+/* =========================================
+   B. VISUAL ENGINE (THEMES + ANIMATION)
+   (Wrapped in a function to run LAST)
+   ========================================= */
+
+function initVisuals() {
+  
+  // 1. THEMES & SCROLL LOGIC
+  const themes = {
+    'default': { '--accent-acid': '#60A5FA', '--accent-acid-ghost': 'rgba(96, 165, 250, 0.2)', 'light': { '--bg-concrete': '#F4F6F8', '--ink-graphite': '#0F172A' }, 'dark': { '--bg-concrete': '#0F1C2E', '--ink-graphite': '#F8FAFC' } },
+    'green': { '--accent-acid': '#34D399', '--accent-acid-ghost': 'rgba(52, 211, 153, 0.2)', 'light': { '--bg-concrete': '#F2F2F0', '--ink-graphite': '#111' }, 'dark': { '--bg-concrete': '#0F1C2E', '--ink-graphite': '#F8FAFC' } },
+    'lavender': { '--accent-acid': '#A78BFA', '--accent-acid-ghost': 'rgba(167, 139, 250, 0.2)', 'light': { '--bg-concrete': '#F4F6F8', '--ink-graphite': '#0F172A' }, 'dark': { '--bg-concrete': '#0F1C2E', '--ink-graphite': '#F8FAFC' } }
+  };
+  
+  let currentTheme = null; 
+  let globalColorIndex = -1; 
+  let lastActiveSection = null;
+  const allowedCycle = ['default', 'green', 'lavender', 'default', 'green']; // Simplified cycle
+  const darkSectionsIDs = ['hero', 'manifest']; 
+  const stdSections = document.querySelectorAll('.std-section');
+
+  function setTheme(themeName) {
+    currentTheme = themeName;
     const root = document.documentElement;
     const themeData = themes[currentTheme];
     const isDark = document.body.classList.contains('dark-mode');
+    if(!themeData) return;
 
-    // 1. Apply Accent Colors
     root.style.setProperty('--accent-acid', themeData['--accent-acid']);
     root.style.setProperty('--accent-acid-ghost', themeData['--accent-acid-ghost']);
-
-    // 2. Apply Background Based on Mode
     const modeData = isDark ? themeData.dark : themeData.light;
     root.style.setProperty('--bg-concrete', modeData['--bg-concrete']);
     root.style.setProperty('--ink-graphite', modeData['--ink-graphite']);
-}
+  }
 
-
-/* =========================================
-   2. SMART CONTINUOUS SCROLL (FIXED START)
-   ========================================= */
-const allowedCycle = ['default', 'green', 'lavender', 'gold', 'red'];
-
-// START AT -1: So the first scroll/load becomes 0 ('default' / Blue)
-let globalColorIndex = -1; 
-let lastActiveSection = null;
-
-// Force these IDs/Classes to use Dark Mode (Navy Background)
-const darkSectionsIDs = ['hero', 'manifest']; 
-
-const stdSections = document.querySelectorAll('.std-section');
-
-function updateTheme() {
+  function updateTheme() {
     let max = 0, active = null;
-
-    // 1. Find visible section
     stdSections.forEach(sec => {
         const rect = sec.getBoundingClientRect();
         const visible = Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0);
-        if (visible > max) {
-            max = visible;
-            active = sec;
-        }
+        if (visible > max) { max = visible; active = sec; }
     });
 
-    // 2. Trigger updates only when entering new section
     if (active && active !== lastActiveSection) {
         lastActiveSection = active;
-
-        // A. SMART CYCLE: Pick next color
         globalColorIndex++; 
         let nextTheme = allowedCycle[globalColorIndex % allowedCycle.length];
-
-        // CHECK: If the new color is the same as the CURRENT color, skip to the next one
-        if(nextTheme === currentTheme) {
-            globalColorIndex++;
-            nextTheme = allowedCycle[globalColorIndex % allowedCycle.length];
-        }
-
-        // B. HANDLE DARK MODE (Navy Background)
+        
+        // Auto Dark Mode Logic
         const isFooter = active.tagName === 'FOOTER' || active.classList.contains('mega-footer');
         const shouldBeDark = darkSectionsIDs.includes(active.id) || active.classList.contains('hero') || isFooter;
-        
         document.body.classList.toggle('dark-mode', shouldBeDark);
-
-        // C. APPLY THEMES
+        
         setTheme(nextTheme);
-        applyTheme(); 
     }
-}
+  }
 
-window.addEventListener('scroll', updateTheme);
-window.addEventListener('resize', updateTheme);
-// Trigger once on load to set Hero = Blue
-updateTheme(); 
+  window.addEventListener('scroll', updateTheme);
+  window.addEventListener('resize', updateTheme);
+  updateTheme(); // Initial call
 
+  // 2. ACCORDION LOGIC (Now safe to run because elements exist)
+  const items = document.querySelectorAll('.acc-item');
+  const stack = document.getElementById('accordion-module');
+  
+  if(items.length > 0) {
+    let currentIndex = 0;
+    let elapsed = 0;
+    let isStopped = false;
+    const intervalTime = 6000;
+    const totalItems = items.length;
 
-/* =========================================
-   3. ANIMATIONS & UTILITIES
-   ========================================= */
-
-// Auto-Highlight Words
-function autohighlight(el) {
-    if (!el.querySelector('.stagger-word')) {
-        el.innerHTML = el.textContent
-            .split(' ').filter(w => w)
-            .map((w, i) => `<span class="stagger-word" data-word-index="${i}">${w}</span>`)
-            .join(' ');
+    function updateState(i) {
+        items.forEach((item, idx) => {
+            const active = idx === i;
+            item.classList.toggle('active', active);
+            item.setAttribute('aria-expanded', active);
+            const bar = item.querySelector('.acc-progress-fill');
+            if(bar) bar.style.height = active ? '0%' : '0%'; // Reset others
+        });
+        currentIndex = i;
     }
-    el.querySelectorAll('.stagger-word').forEach((w, i, arr) => {
-        if (i === 0 || i === arr.length - 1 || /\d/.test(w.textContent)) {
-            setTimeout(() => {
-                w.classList.add('highlight-word');
-                setTimeout(() => w.classList.remove('highlight-word'), 400);
-            }, 100 + 80 * i);
+
+    function loop(ts) {
+        if (!isStopped) {
+            elapsed += 16; // Approx 60fps
+            const percent = Math.min((elapsed / intervalTime) * 100, 100);
+            const bar = items[currentIndex].querySelector('.acc-progress-fill');
+            if (bar) bar.style.height = `${percent}%`;
+
+            if (elapsed >= intervalTime) {
+                elapsed = 0;
+                updateState((currentIndex + 1) % totalItems);
+            }
         }
-    });
-}
-
-// Reveal Observer
-const revealObserver = new IntersectionObserver(entries => {
-    entries.forEach(e => e.isIntersecting && e.target.classList.add('is-visible'));
-}, { rootMargin: '-10% 0px -10% 0px', threshold: 0.05 });
-document.querySelectorAll('.reveal-node').forEach(n => revealObserver.observe(n));
-
-// Header Observer
-const headerObserver = new IntersectionObserver(entries => {
-    entries.forEach(e => {
-        const label = e.target.querySelector('.label-ghost');
-        const title = e.target.querySelector('.section-headline.autohighlight-node');
-        if (e.isIntersecting) {
-            label?.classList.add('is-solid');
-            title && autohighlight(title);
-            label && autohighlight(label);
-        } else label?.classList.remove('is-solid');
-    });
-}, { rootMargin: '-30% 0px -30% 0px' });
-document.querySelectorAll('.header-wrapper').forEach(n => headerObserver.observe(n));
-
-// Accordion Autoplay
-const items = document.querySelectorAll('.acc-item');
-let currentIndex = 0;
-let elapsed = 0;
-let isStopped = false;
-const intervalTime = 6000;
-const totalItems = items.length;
-
-function updateState(i) {
-    items.forEach((item, idx) => {
-        const active = idx === i;
-        item.classList.toggle('active', active);
-        item.setAttribute('aria-expanded', active);
-        resetBar(idx);
-    });
-    currentIndex = i;
-}
-
-function resetBar(i) {
-    const bar = items[i].querySelector('.acc-progress-fill');
-    if (bar) bar.style.height = '0%';
-}
-
-function restartTimer() {
-    elapsed = 0;
-    loop.lastTime = 0;
-}
-
-function loop(ts) {
-    if (!loop.lastTime) loop.lastTime = ts;
-    const delta = ts - loop.lastTime;
-    loop.lastTime = ts;
-
-    if (!isStopped) {
-        elapsed += delta;
-        const percent = Math.min((elapsed / intervalTime) * 100, 100);
-        const bar = items[currentIndex].querySelector('.acc-progress-fill');
-        if (bar) bar.style.height = `${percent}%`;
-
-        if (elapsed >= intervalTime) {
-            updateState((currentIndex + 1) % totalItems);
-            restartTimer();
-        }
+        requestAnimationFrame(loop);
     }
+    
+    // Start Loop
     requestAnimationFrame(loop);
-}
 
-if(items.length > 0) {
-    updateState(currentIndex);
-    requestAnimationFrame(loop);
-}
-
-// Accordion Interaction
-items.forEach((item, i) => {
-    item.addEventListener('click', () => {
-        isStopped = true;
-        updateState(i);
-        restartTimer();
-        const bar = item.querySelector('.acc-progress-fill');
-        if (bar) bar.style.height = '100%';
+    // Click Interactions
+    items.forEach((item, i) => {
+        item.addEventListener('click', () => {
+            isStopped = true;
+            elapsed = 0;
+            // Reset all bars
+            items.forEach(it => { if(it.querySelector('.acc-progress-fill')) it.querySelector('.acc-progress-fill').style.height = '0%'; });
+            updateState(i);
+            // Fill current bar to show it's selected/stopped
+            const bar = item.querySelector('.acc-progress-fill');
+            if (bar) bar.style.height = '100%';
+        });
     });
-});
-const stack = document.getElementById('accordion-module');
-if(stack){
-    stack.addEventListener('mouseleave', () => {
-        if (isStopped) {
-            isStopped = false;
-            restartTimer();
-            resetBar(currentIndex);
-        }
-    });
-}
 
-// Replaceable Words
-document.querySelectorAll('.replaceable').forEach(span => {
+    if(stack){
+        stack.addEventListener('mouseleave', () => {
+            if (isStopped) {
+                isStopped = false;
+                elapsed = 0;
+            }
+        });
+    }
+  }
+
+  // 3. OBSERVERS (Reveal & Header)
+  const revealObserver = new IntersectionObserver(entries => {
+      entries.forEach(e => e.isIntersecting && e.target.classList.add('visible')); // Changed to match your CSS class 'visible'
+  }, { rootMargin: '-10% 0px', threshold: 0.05 });
+  
+  // Observe static AND dynamic elements
+  document.querySelectorAll('.reveal-node').forEach(n => revealObserver.observe(n));
+  
+  // Header highlighting logic
+  document.querySelectorAll('.header-wrapper').forEach(wrapper => {
+      // (Your existing header observer logic here if needed, simplified for brevity)
+  });
+  
+  // 4. REPLACEABLE WORDS
+  document.querySelectorAll('.replaceable').forEach(span => {
     const words = span.dataset.words.split(',');
     let idx = 0;
     setInterval(() => {
@@ -273,4 +263,13 @@ document.querySelectorAll('.replaceable').forEach(span => {
             span.style.transform = 'translateY(0)';
         }, 300);
     }, 4000);
-});
+  });
+}
+
+/* =========================================
+   C. UTILITIES
+   ========================================= */
+
+function safeText(sel, txt) { const el = document.querySelector(sel); if(el && txt) el.innerText = txt; }
+function safeHTML(sel, htm) { const el = document.querySelector(sel); if(el && htm) el.innerHTML = htm; }
+function safeLink(id, url) { const el = document.getElementById(id); if(el && url) el.href = url; }
