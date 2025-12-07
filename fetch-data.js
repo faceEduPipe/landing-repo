@@ -1,11 +1,15 @@
 const fs = require('fs');
 const { google } = require('googleapis');
 
-// 1. Load Credentials from the GitHub Secret
-// If testing locally, you can use require('./your-key.json') but DO NOT upload that file.
+// SAFETY CHECK: Ensure env var exists before parsing
+if (!process.env.GOOGLE_CREDENTIALS) {
+  console.error('❌ FATAL: process.env.GOOGLE_CREDENTIALS is undefined.');
+  console.error('   If running locally, ensure you have set the variable.');
+  process.exit(1);
+}
+
 const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS);
 
-// 2. Configure Auth
 const auth = new google.auth.GoogleAuth({
   credentials,
   scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
@@ -13,13 +17,11 @@ const auth = new google.auth.GoogleAuth({
 
 async function run() {
   const sheets = google.sheets({ version: 'v4', auth });
-  
-  // !!! REPLACE THIS WITH YOUR REAL SHEET ID !!!
   const spreadsheetId = '1McYsdNafqfo2Rg0MJ13SVLAUbcf10iV3dEYiXdcpm_c'; 
 
   console.log('Fetching data from Google Sheets...');
 
-  // 3. Define Tabs to Fetch (Must match your Sheet Tab Names exactly)
+  // Ensure these match your actual Tab names in the Sheet
   const ranges = ['Global!A:B', 'Grid!A:D', 'Tracks!A:H', 'Method!A:D'];
   
   try {
@@ -30,41 +32,63 @@ async function run() {
 
     const data = response.data.valueRanges;
 
-    // 4. Structure the Data
+    // DATA MAPPING
+    // We map by index, so the order of 'ranges' above is critical.
     const output = {
-      global: parseGlobal(data[0].values),
-      grid: parseList(data[1].values),
-      tracks: parseList(data[2].values),
-      method: parseList(data[3].values)
+      global: parseGlobal(data[0].values), // Maps Global!A:B
+      grid:   parseList(data[1].values),   // Maps Grid!A:D
+      tracks: parseList(data[2].values),   // Maps Tracks!A:H
+      method: parseList(data[3].values)    // Maps Method!A:D
     };
 
-    // 5. Save to JSON
+    // DEBUG: Log the keys to ensure they match what Frontend expects
+    console.log('Global Keys found:', Object.keys(output.global));
+    console.log('Grid items count:', output.grid.length);
+
     fs.writeFileSync('content.json', JSON.stringify(output, null, 2));
     console.log('✅ Success! content.json created.');
 
   } catch (err) {
-    console.error('❌ Error fetching data:', err.message);
+    console.error('❌ Error fetching data:');
+    // detailed error logging
+    if (err.response) {
+      console.error(err.response.data.error);
+    } else {
+      console.error(err.message);
+    }
     process.exit(1);
   }
 }
 
 // --- Helpers ---
+
 function parseGlobal(rows) {
-  if (!rows) return {};
+  if (!rows || rows.length < 2) return {}; // Safety if tab is empty
   const result = {};
+  // Skip header (row 0), iterate rest
   rows.slice(1).forEach(row => {
-    if(row[0]) result[row[0]] = row[1] || "";
+    // row[0] is the Key (Column A), row[1] is the Value (Column B)
+    if(row[0]) {
+        // clean the key string to ensure no accidental spaces
+        const key = row[0].trim(); 
+        result[key] = row[1] || "";
+    }
   });
   return result;
 }
 
 function parseList(rows) {
-  if (!rows) return [];
+  if (!rows || rows.length < 2) return [];
+  // Clean headers: " Title " -> "title"
   const headers = rows[0].map(h => h.toLowerCase().trim());
+  
   return rows.slice(1).map(row => {
     let obj = {};
     headers.forEach((header, i) => {
-      obj[header] = row[i] || "";
+      // If header is empty string (empty column), skip it
+      if(header) {
+        obj[header] = row[i] || "";
+      }
     });
     return obj;
   });
