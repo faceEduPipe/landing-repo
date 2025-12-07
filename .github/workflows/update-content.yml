@@ -1,0 +1,39 @@
+name: Update Content from Sheets
+
+on:
+  # Run manually from the Actions tab
+  workflow_dispatch:
+  # OR Run automatically every 6 hours
+  schedule:
+    - cron: '0 */6 * * *'
+
+jobs:
+  refresh-data:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Important: Allows the bot to commit changes
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Fetch Data
+        env:
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+        run: node fetch-data.js
+
+      - name: Commit and Push changes
+        run: |
+          git config --global user.name 'FACE-Bot'
+          git config --global user.email 'bot@noreply.github.com'
+          git add content.json
+          git commit -m "Auto-update content from Google Sheets" || echo "No changes to commit"
+          git push
