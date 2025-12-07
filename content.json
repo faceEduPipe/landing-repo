@@ -1,15 +1,15 @@
 {
   "global": {
-    "2": "hero_headline",
-    "3": "hero_sub",
-    "4": "cta_label",
-    "5": "link_tiktok",
-    "6": "link_instagram",
-    "7": "link_patreon",
-    "8": "sec1_title",
-    "9": "sec2_title",
-    "10": "sec3_title",
-    "11": "footer_email"
+    "hero_headline": "FACE SYSTEM 4.0",
+    "hero_sub": "The master controller for decentralized education logistics.",
+    "cta_label": "Initialize Sequence",
+    "link_tiktok": "https://tiktok.com/@yourhandle",
+    "link_instagram": "https://instagram.com/yourhandle",
+    "link_patreon": "https://patreon.com/yourhandle",
+    "sec1_title": "CAPABILITIES",
+    "sec2_title": "MANIFEST",
+    "sec3_title": "METHODOLOGY",
+    "footer_email": "contact@face.edu"
   },
   "grid": [
     {
