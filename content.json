@@ -1,15 +1,15 @@
 {
   "global": {
-    "2": "hero_headline",
-    "3": "hero_sub",
-    "4": "cta_label",
-    "5": "link_tiktok",
-    "6": "link_instagram",
-    "7": "link_patreon",
-    "8": "sec1_title",
-    "9": "sec2_title",
-    "10": "sec3_title",
-    "11": "footer_email"
+    "hero_headline": "Small Cycle.<br><span class=\"accent-text\">Real Work.</span>",
+    "hero_sub": "Field support for educators.<br>Not student programs.<br><br>Nothing more. Nothing less.",
+    "cta_label": "Scroll to Map",
+    "link_tiktok": "https://tiktok.com/@yourhandle",
+    "link_instagram": "https://instagram.com/@yourhandle",
+    "link_patreon": "https://patreon.com/yourhandle",
+    "sec1_title": "CORE FUNCTION",
+    "sec2_title": "DEPLOYMENT TRACKS",
+    "sec3_title": "OPERATING FRAMEWORK",
+    "footer_email": "contact@yourdomain.com"
   },
   "grid": [
     {
