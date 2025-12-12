@@ -1,7 +1,7 @@
 {
   "global": {
     "hero_headline": "Small Cycle.<br><span class=\"accent-text\">Real Work.</span>",
-    "hero_sub": "Field support for educators.<br>Not student programs.<br><br>Nothing more. Nothing less.",
+    "hero_sub": "We are an operational bridge between academics and the future.",
     "cta_label": "Scroll to Map",
     "link_tiktok": "https://tiktok.com/@yourhandle",
     "link_instagram": "https://instagram.com/@yourhandle",
@@ -13,26 +13,26 @@
   },
   "grid": [
     {
-      "marker": "[ ]",
-      "title": "Logistics",
-      "desc": "Permits, visas, and administrative drag. We handle the friction so you can work."
+      "marker": "ACCESS",
+      "title": "Protocol",
+      "desc": "We secure the permits and entry badges so you can focus on the work"
     },
     {
-      "marker": "#",
-      "title": "Network",
+      "marker": "ALIGNMENT",
+      "title": "Curriculum",
       "desc": "Connections that are actually useful. No networking events. Just the contacts you need."
     },
     {
-      "marker": ">>>",
-      "title": "Funding",
-      "desc": "Capital for action, not promises. Funds move in days, not months."
+      "marker": "FUNDING",
+      "title": "Underwriting",
+      "desc": "We utilize institutional grants to fully subsidize ground logistics. We ensure merit-based access for your top talent."
     }
   ],
   "tracks": [
     {
       "title": "LAB",
       "meta": "FIELD RESEARCH",
-      "desc": "Small cycles. Field conditions. A student team runs a build → test sequence with a partner site.",
+      "desc": " Industrial Immersion. Students leave the classroom to audit global operating systems—from Net Zero energy grids to AI logistics hubs.",
       "loc": "CJK",
       "attendees": "18–20",
       "duration": "10 Days",
@@ -41,16 +41,16 @@
     {
       "title": "STUDIO",
       "meta": "ARTS + PERFORMANCE",
-      "desc": "Local forms. Real practice. Students join a host studio, rehearse a short piece, and deliver a clean showing.",
+      "desc": " The Global Stage. A performance cycle designed specifically for underrepresented talent. We provide the venue, the logistics, and the audience. No barriers. Just the work. \n",
       "loc": "CJK",
       "attendees": "18–20",
       "duration": "10 Days",
       "freq": "Quarterly"
     },
     {
-      "title": "PANEL",
+      "title": "NODE",
       "meta": "EDUCATOR EXCHANGE",
-      "desc": "Nodes. Systems. Coordination. An educator links with a local institution and sets a shared route.",
+      "desc": "Signal Exchange. Pure networking events for school leaders and program directors. Connecting the global wire, one contact at a time.\n",
       "loc": "CJK",
       "attendees": "5+",
       "duration": "7 Days",
@@ -59,18 +59,18 @@
   ],
   "method": [
     {
-      "marker": "1",
-      "title": "Input",
+      "marker": "THE GAP",
+      "title": "IDENTIFY",
       "desc": "You define the project parameters. We provide the framework."
     },
     {
-      "marker": "2",
-      "title": "Integration",
+      "marker": "THE SEAT",
+      "title": "NOMINATE",
       "desc": "Your curriculum plugs into our network. Logistics, funding, and access aligned."
     },
     {
-      "marker": "3",
-      "title": "Deployment",
+      "marker": "THE FIELD",
+      "title": "DEPLOY",
       "desc": "Field execution. Real stakes. Students and educators gain hands-on experience."
     }
   ]
